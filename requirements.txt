@@ -1,0 +1,6 @@
+gradio
+pandas
+streamlit
+specklepy
+plotly
+matplotlib
