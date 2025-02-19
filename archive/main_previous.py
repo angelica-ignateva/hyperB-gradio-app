@@ -4,13 +4,8 @@ import plotly.express as px
 from specklepy.api.client import SpeckleClient
 from specklepy.api.credentials import get_account_from_token
 import matplotlib.pyplot as plt
-from structural_page import s_demo
-from residential_page import r_demo
-from facade_page import f_demo
-from industrial_page import i_demo
-from service_page import c_demo
-# from space_calculator import sc_demo
 
+# def create_dashboard():
 # Initialize Speckle client and credentials
 speckle_server = "macad.speckle.xyz"
 speckle_token = "abaa47aed44d2e7faf42d3ba5f7e7440a06b487d9e"
@@ -21,7 +16,6 @@ client.authenticate_with_account(account)
 # Project ID
 # project_id = "daeb18ed0a"
 project_id = "28a211b286" # hyperB project
-
 
 def get_project_data():
     project = client.project.get_with_models(project_id=project_id, models_limit=20)
@@ -101,33 +95,18 @@ def create_graphs(project_data):
     
     model_graph = px.bar(model_counts, x="modelName", y="totalCommits", 
                         title="Model Commit Distribution")
-    model_graph.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Graphite background color
-        plot_bgcolor='rgb(50, 50, 50)',   # Graphite background color for the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white'))     # Title font color
     
     # Connector distribution
     version_frame = pd.DataFrame.from_dict([{"sourceApplication": v.sourceApplication} for v in all_versions])
     apps = version_frame["sourceApplication"].value_counts().reset_index()
     apps.columns = ["app", "count"]
     connector_graph = px.pie(apps, names="app", values="count", title="Connector Distribution")
-    connector_graph.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Background color of the entire chart
-        plot_bgcolor='rgb(50, 50, 50)',    # Background color of the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white'))
     
     # Contributor distribution
     version_user_names = [v.authorUser.name for v in all_versions]
     authors = pd.DataFrame(version_user_names).value_counts().reset_index()
     authors.columns = ["author", "count"]
     contributor_graph = px.pie(authors, names="author", values="count", title="Contributor Distribution")
-    contributor_graph.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Background color of the entire chart
-        plot_bgcolor='rgb(50, 50, 50)',    # Background color of the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white'))
     
     return model_graph, connector_graph, contributor_graph
 
@@ -260,7 +239,7 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
         
         with gr.Row():
             viewer_iframe = gr.HTML(max_height=600)
-            model_stats = gr.Dataframe(label="Model Statistics", datatype=["str", "number"], scale = 0.5, show_fullscreen_button=True, show_copy_button=True,
+            model_stats = gr.Dataframe(label="Model Statistics", datatype=["str", "number"], scale=0.5, show_fullscreen_button=True, show_copy_button=True,
                                     wrap=True, max_height=600)
         
         with gr.Row():
@@ -272,6 +251,7 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
         with gr.Row():
             model_plot = gr.Plot()
             connector_plot = gr.Plot()
+            #df_contributor = generate_contributor_statistics()
             contributor_plot = gr.Plot()
         
         with gr.Row():
@@ -291,8 +271,6 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
             gr.Plot(program_charts[4])
             gr.Plot(program_charts[5])
 
-    # with gr.Tab("Space Calculator"):
-    #     sc_demo.render()
     with gr.Tab("Team Requirements"):
         with gr.Row():
             team_dropdown = gr.Dropdown(choices=['Residential Team', 'Facade Team', 'Structural Team', 'Service Team', 'Industrial Team'], 
@@ -304,18 +282,6 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
         with gr.Row():
             sheet_display = gr.DataFrame()
             team_dropdown.change(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
-
-    with gr.Tab("Structural Team"):
-        s_demo.render()
-    with gr.Tab("Facade Team"):
-        f_demo.render()
-    with gr.Tab("Residential Team"):
-        r_demo.render()
-    with gr.Tab("Industrial Team"):
-        i_demo.render()
-    with gr.Tab("Service Team"):
-        c_demo.render()
-
 
     # Load the default team's sheet when the app starts
     demo.load(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
@@ -353,6 +319,9 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
         inputs=[model_dropdown, version_dropdown],
         outputs=[viewer_iframe]
     )
+    
+    # Load the default team's sheet when the app starts
+    demo.load(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
 
 
 demo.launch()
