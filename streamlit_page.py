@@ -1,28 +1,16 @@
-#--------------------------
-#IMPORT LIBRARIES
-#import streamlit
 import streamlit as st
-#specklepy libraries
 from specklepy.api.client import SpeckleClient
+from specklepy.transports.server import ServerTransport
 from specklepy.api.credentials import get_account_from_token
-#import pandas
 import pandas as pd
-#import plotly express
 import plotly.express as px
 #--------------------------
 
 # py -m streamlit run streamlit_page.py
-# st.title("Main Page")
-#--------------------------
-#PAGE CONFIG
-st.set_page_config(
-page_title="Speckle Stream Activity",
-page_icon="📊"
-)
-#--------------------------
 
-#--------------------------
-#CONTAINERS
+# st.title("Main Page")
+st.set_page_config(
+page_title="Speckle Stream Activity", page_icon="📊")
 header = st.container()
 input = st.container()
 viewer = st.container()
@@ -32,53 +20,35 @@ graphs = st.container()
 
 #--------------------------
 #HEADER
-#Page Header
 with header:
     st.title("HYPER B // Dashboard 📈")
-#About info
 with header.expander("About this app🔽", expanded=True):
-    st.markdown(
-"""This is a web application using Streamlit and Specklepy to monitor commits in for BIMSC HYPER-B team.
-"""
-    )
-#--------------------------
-
+    st.markdown("""This is a web application to analyse the HYPER-B building.""")
 with input:
     st.subheader("Inputs")
-
+    # serverCol, tokenCol = st.columns([1,2])
 #-------
-#Columns for inputs
-serverCol, tokenCol = st.columns([1,2])
-#-------
-
+# Identify the Project and Model
+project_id = "daeb18ed0a"
+model_id = "aab87740df"
 #-------
 #User Input boxes
-speckleServer = serverCol.text_input("Server URL", "macad.speckle.xyz", help="Speckle server to connect.")
+speckleServer = "macad.speckle.xyz"
 speckleToken = "abaa47aed44d2e7faf42d3ba5f7e7440a06b487d9e"
-#-------
-
-#-------
-#CLIENT
 client = SpeckleClient(host=speckleServer)
-#Get account from Token
 account = get_account_from_token(speckleToken, speckleServer)
-#Authenticate
 client.authenticate_with_account(account)
+transport = ServerTransport(project_id, client)
 #-------
 
 #-------
-#Streams List👇
-streams = client.stream.list()
-#Get Stream Names
-streamNames = [s.name for s in streams]
-#Dropdown for stream selection
-sName = st.selectbox(label="Select your stream", options=streamNames, help="Select your stream from the dropdown")
-#SELECTED STREAM ✅
-stream = client.stream.search(sName)[0]
-#Stream Branches 🌴
-branches = client.branch.list(stream.id)
-#Stream Commits 🏹
-commits = client.commit.list(stream.id, limit=100)
+projects = client.active_user.get_projects
+projectNames = [p.name for p in projects]
+sName = st.selectbox(label="Select your stream", options=projectNames, value= 'Kunsthaus Zürich', help="Select your project")
+my_model = client.model.get(model_id, project_id)
+versions = client.version.get_versions(model_id, project_id)
+referenced_obj_id = versions.items[0].referencedObject
+pri
 #-------
 
 #--------------------------

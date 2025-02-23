@@ -64,8 +64,8 @@ def load_default_model_and_version(project_data):
     if not models:
         raise gr.Error("No models found starting with 'residential'.")
     
-    first_model = models[2].name
-    versions = client.version.get_versions(model_id=models[2].id, project_id=project_data.id, limit=100).items
+    first_model = models[0].name
+    versions = client.version.get_versions(model_id=models[0].id, project_id=project_data.id, limit=100).items
     if not versions:
         raise gr.Error(f"No versions found for model: {first_model}")
     first_version = version_name(versions[0])

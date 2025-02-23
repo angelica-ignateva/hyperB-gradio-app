@@ -9,6 +9,7 @@ from residential_page import r_demo
 from facade_page import f_demo
 from industrial_page import i_demo
 from service_page import c_demo
+from gradio_page import b_demo
 # from space_calculator import sc_demo
 
 # Initialize Speckle client and credentials
@@ -315,6 +316,8 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
         i_demo.render()
     with gr.Tab("Service Team"):
         c_demo.render()
+    with gr.Tab("Building Analysis"):
+        b_demo.render()
 
 
     # Load the default team's sheet when the app starts
