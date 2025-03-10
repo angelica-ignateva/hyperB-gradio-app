@@ -3,6 +3,7 @@ from specklepy.api.client import SpeckleClient
 from specklepy.api import operations
 from specklepy.api.wrapper import StreamWrapper
 from specklepy.objects import Base
+from specklepy.core.api.inputs.version_inputs import CreateVersionInput
 
 # This script will combine the latest commit of each branch 
 # and push it into a new branch of your choice.
@@ -11,7 +12,7 @@ from specklepy.objects import Base
 # Our MaCAD server!
 server_url = "https://macad.speckle.xyz/"
 # The token for your account. Get it from the Speckle Dashboard > Profile > Acess Tokens
-token = "abaa47aed44d2e7faf42d3ba5f7e7440a06b487d9e"
+token = "51d5c2169a0ec28a325fd1d0bf9feecacd81472670"
 # This is the stream you want to federate the branches of. Change it to your studio stream! 
 stream_url = "https://macad.speckle.xyz/projects/28a211b286"
 # The name of the branch you want to push to. The data inside it will be ignored on further pushes.
@@ -68,25 +69,34 @@ federated_commit_object["@Components"] = commit_data
 # Remember...commits dont hold data in themselves...They point to objects in the database!
 hash3 = operations.send(base=federated_commit_object , transports=[transport])
 
-# We create a function just to handle the two type of situations:
-# If the federated branch already exists, we push into it
-# If it doesnt exist yet (first time you run this), we create it
-def try_get_branch_or_create(client, stream_id, branch_name):
-    branch = client.branch.get(stream_id=stream_id, name=branch_name)
-    if not branch:
-        branch = client.branch.create(stream_id=stream_id, name=branch_name)
-    return branch
+# # We create a function just to handle the two type of situations:
+# # If the federated branch already exists, we push into it
+# # If it doesnt exist yet (first time you run this), we create it
+# def try_get_branch_or_create(client, stream_id, branch_name):
+#     branch = client.branch.get(stream_id=stream_id, name=branch_name)
+#     if not branch:
+#         branch = client.branch.create(stream_id=stream_id, name=branch_name)
+#     return branch
 
-# We use that function to get the branch
-branch = try_get_branch_or_create(client, stream_id, federated_branch)
+# # We use that function to get the branch
+# branch = try_get_branch_or_create(client, stream_id, federated_branch)
 
-# And finally we are ready to create our commit!
-commit_id3 = client.commit.create(
-    branch_name=branch,
-    stream_id=stream_id,
-    object_id=hash3,
-    message="Combined models of towers from Residential, Service and Industrial Teams",
-)
+# # And finally we are ready to create our commit!
+# commit_id3 = client.version.create(
+#     name=branch,
+#     stream_id=stream_id,
+#     object_id=hash3,
+#     message="Combined models of towers from Residential, Service and Industrial Teams",
+# )
+
+
+
+version_data = CreateVersionInput(objectId=hash3, 
+                                  modelId="9a4afc23f0", 
+                                  projectId="28a211b286",
+                                  message="Combined models of towers from Residential, Service and Industrial Teams",
+                                  sourceApplication="Python")
+client.version.create(version_data)
 
 print("Made a new commit")
 print("Done!")

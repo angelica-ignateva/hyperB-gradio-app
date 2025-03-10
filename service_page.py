@@ -3,6 +3,7 @@ from specklepy.api.client import SpeckleClient
 from specklepy.api.credentials import get_account_from_token
 import pandas as pd
 import plotly.express as px
+import os
 
 # Initialize Speckle client and credentials
 speckle_server = "macad.speckle.xyz"
@@ -13,188 +14,155 @@ client.authenticate_with_account(account)
 
 # Project ID
 project_id = "28a211b286"
+project = client.project.get_with_models(project_id=project_id, models_limit=100)
 
-def get_project_data():
-    project = client.project.get_with_models(project_id=project_id, models_limit=20)
-    return project
-
-# Initialize project data
-project_data = get_project_data()
-
-# Filter models whose names start with 'data'
-models = [m for m in project_data.models.items if m.name.startswith('service')]
+# Filter models whose names start with 'structure/'
+# models = [item for item in project.models.items] // all models
+models = [item for item in project.models.items if item.name.startswith('service/')]
+model = models[0]  # Select the first model
 models_name = [m.name for m in models]  # Extract model names
-print(models_name)
+models_name = models_name[0]  # Select the first model
+versions = client.version.get_versions(model_id=model.id, project_id=project.id, limit=100).items
+version = versions[0]  # Select the first version
 
-def version_name(version):
-    timestamp = version.createdAt.strftime("%Y-%m-%d %H:%M:%S")
+def version_name():
+    timestamp = model.createdAt.strftime("%Y-%m-%d %H:%M:%S")
     return ' - '.join([version.authorUser.name, timestamp, version.message])
 
-def update_version_selection(model_name, project_data):
-    selected_model = [m for m in models if m.name == model_name][0]
-    versions = client.version.get_versions(model_id=selected_model.id, project_id=project_data.id, limit=100).items
-    return gr.Dropdown(choices=[version_name(v) for v in versions], label="Select Version")
-
-def create_viewer_url(model_name, version_key, project_data):
-    selected_model = [m for m in models if m.name == model_name][0]
-    versions = client.version.get_versions(model_id=selected_model.id, project_id=project_data.id, limit=100).items
-    keys = [version_name(v) for v in versions]
-    selected_version = versions[keys.index(version_key)]
-    embed_src = f"https://macad.speckle.xyz/projects/{project_data.id}/models/{selected_model.id}@{selected_version.id}#embed=%7B%22isEnabled%22%3Atrue%2C%7D"
+def create_viewer_url(version, project):
+    embed_src = f"https://macad.speckle.xyz/projects/{project.id}/models/{model.id}@{version.id}#embed=%7B%22isEnabled%22%3Atrue%2C%7D"
     return embed_src
 
-def get_version_details(project_data):
-    all_version_details = []
-    
-    for model in models:
-        versions = client.version.get_versions(model_id=model.id, project_id=project_data.id, limit=100).items
-        
-        for version in versions:
-            all_version_details.append({
-                "Model Name": model.name,
-                "Timestamp": version.createdAt.strftime("%Y-%m-%d %H:%M:%S"),
-                "Author Name": version.authorUser.name,
-                "Version Message": version.message
-            })
-    
-    return pd.DataFrame(all_version_details)
 
-def load_default_model_and_version(project_data):
-    # Get the first model and its first version
-    if not models:
-        raise gr.Error("No models found starting with 'structure'.")
-    
-    first_model = models[0].name
-    versions = client.version.get_versions(model_id=models[0].id, project_id=project_data.id, limit=100).items
-    if not versions:
-        raise gr.Error(f"No versions found for model: {first_model}")
-    
-    first_version = version_name(versions[0])
-    
-    # Get the viewer URL and version details DataFrame
-    viewer_url = create_viewer_url(first_model, first_version, project_data)
-    version_details = get_version_details(project_data)
-    
-    return first_model, first_version, viewer_url, version_details
-
-first_model, first_version, viewer_url, version_details = load_default_model_and_version(project_data)
-
-print(len(version_details))
-
-def plot_bar_chart(value1, value2):
+def plot_bar_chart(types_list, values_list):
     df = pd.DataFrame({
-        'category': ['Maintenance costs', 'Residents maintenance savings'],
-        'values': [value1, value2]
+        'category': types_list,
+        'values': values_list,
     })
+
+    fig = px.bar(df, y='category', x='values', orientation= 'h', color='category',
+                 color_discrete_sequence=px.colors.sequential.Sunsetdark_r)  # or .Viridis, .Inferno, .Magma, etc.
+                # color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800'])  # Custom colors
     
-    fig = px.bar(df, x='category', y='values', title="Residents savings", 
-                 color='category', text='values')
+                
     
     fig.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Graphite background color
-        plot_bgcolor='rgb(50, 50, 50)',   # Graphite background color for the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white')     # Title font color
+        height = 500,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
+        plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
+        font=dict(color='white'),         # White font color
+        title_font=dict(color='white'),   # White title font
+        yaxis=dict(showticklabels=False), # Hide y-axis labels
+        xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
     )
+    
+    fig.update_traces(textposition='outside')  # Display values outside bars
 
     return fig
 
-def plot_bar_chart2(value1, value2):
+def plot_pie_chart(types_list, values_list):
     df = pd.DataFrame({
-        'category': ['Standard system downtime', 'Hyper Team B Building system downtime'],
-        'values': [value1, value2]
+        'category': types_list,
+        'values': values_list,
     })
-    custom_colors = ['#1f77b4', '#ff7f0e']  # Blue and orange
-    fig = px.bar(df, x='category', y='values', title="System downtime", 
-                 color='category', text='values', color_discrete_sequence=custom_colors)
+
+    fig = px.pie(df, names='category', values='values', hole=0.3,
+                 color_discrete_sequence=px.colors.sequential.Sunsetdark)  # or .Bold, .Safe, .Vivid, etc.
+                # color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800'])  # Custom colors
+    
+                
     
     fig.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Graphite background color
-        plot_bgcolor='rgb(50, 50, 50)',   # Graphite background color for the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white')     # Title font color
+        height = 770,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
+        plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
+        font=dict(color='white'),         # White font color
+        title_font=dict(color='white'),   # White title font
+        yaxis=dict(showticklabels=False), # Hide y-axis labels
+        xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
     )
+    
+    fig.update_traces(textposition='outside', sort = False, pull=[0.1] * len(df))  # Display values outside bars
 
     return fig
 
+###########################################################################################################
 
+# Load Google Sheet
+sheet_csv_url1 = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=156286963"
+df1 = pd.read_csv(sheet_csv_url1)
 
+sheet_csv_url2 = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=1699500852"
+df2 = pd.read_csv(sheet_csv_url2)
+
+sheet_csv_url3 = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=1882469927"
+df3 = pd.read_csv(sheet_csv_url3)
+
+###########################################################################################################
+
+pie1 = plot_pie_chart(df1['Function'].tolist()[:-2], df1['Area, sq.m.'].tolist()[:-2])
+bar2 = plot_bar_chart(df2['Amenity type'].tolist(), df2['Average time, min'].tolist())
+pie3 = plot_pie_chart(df3['Description'].tolist()[:-2], df3['Area, sq.m.'].tolist()[:-2])
+# pie1.show()
 
 with gr.Blocks() as c_demo:
-    with gr.Row():
-        model_dropdown = gr.Dropdown(choices=models_name, label="Select Service Team Model")
-        version_dropdown = gr.Dropdown(label="Select Version", allow_custom_value=True)
-    
-    with gr.Row():
-        viewer_iframe = gr.HTML(max_height=600)
-        version_details_df = gr.Dataframe(
-            label="Version Details",
-            headers=["Timestamp", "Author Name", "Version Message"],
-            datatype=["str", "str", "str"],
-            show_fullscreen_button=True,
-            show_copy_button=True,
-            wrap=True,
-            max_height=600
-        )
-    with gr.Row():
-        gr.Markdown("## KPIs and metrics")
+
+    with gr.Tab(label="Statictics"):
+
+        with gr.Row(equal_height=True):
+                gr.Textbox(value=models_name, label="Last Service Team Model")
+                gr.Textbox(value = version_name(), label="Last Version")
+        with gr.Row(equal_height=True):
+            with gr.Column():
+                viewer_iframe = gr.HTML()
         
-    with gr.Row():
-        with gr.Column():
-            value1 = gr.Number(label="Maintenance costs (%)", value=100)
-            value2 = gr.Number(label="Residents maintenance savings (%)", value=55)
-            submit_btn1 = gr.Button("Submit")
+            with gr.Column():
+                gr.Gallery(value=["images/service_01.png", "images/service_02.png", "images/service_03.gif", "images/service_04.png"], label="Service Team Images", 
+                            rows=[1], columns=[3], selected_index=0, object_fit="contain", height=600)
+                    
+
+        gr.Markdown("#", height=50)
+        gr.Markdown("# Service Team Statistics", container=True)            
+        with gr.Row():
+            gr.DataFrame(value=df1, label="Service Team Metrics", interactive=False, show_fullscreen_button = True, max_height=1000, column_widths=[200,100])
+            gr.Plot(pie1, container=False, show_label=False)
+        gr.Markdown("#", height=50)
+
+        gr.Markdown("#", height=50)
+        gr.Markdown("# KPI 1: Distance to amenities", container=True)  
+        with gr.Row():
+            with gr.Column():
+                gr.DataFrame(value=df2, label="Distance to function", interactive=False, show_fullscreen_button = True, max_height=1000, show_row_numbers=True)
+                gr.Image(value="images/service_metric2.jpg", show_label=False, container=False, show_fullscreen_button=False, show_download_button=False)
+            with gr.Column():
+                gr.Plot(bar2, container=False, show_label=False) 
+
+        gr.Markdown("#", height=50)
+        gr.Markdown("# KPI 2: Open Space per person", container=True)  
+        with gr.Row():
+            with gr.Column():
+                gr.DataFrame(value=df3, label="Open Space per person", interactive=False, show_fullscreen_button = True, max_height=1000)
+                gr.Image(value="images/service_metric1.jpg", show_label=False, container=False, show_fullscreen_button=False, show_download_button=False)
+            with gr.Column():
+                gr.Plot(pie3, container=False, show_label=False)  
+
+    with gr.Tab(label="Adjancency matrix"):
+        gr.Markdown("#", height=50)
+        gr.Markdown("# Adjacency matrix", container=True)
+        gr.HTML(f'<iframe src="https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/htmlembed?gid=28596027" width="100%" height="800px"></iframe>')
         
-        with gr.Column():
-            value3 = gr.Number(label="Standard system downtime (%)", value=100)
-            value4 = gr.Number(label="Hyper Team B Building system downtime (%)", value=40)
-            submit_btn2 = gr.Button("Submit")
 
-            
-    with gr.Row():
-        with gr.Column():
-            output1 = gr.Plot()
-            
-        
-        with gr.Column():
-            output2 = gr.Plot()
-
-    submit_btn1.click(plot_bar_chart, inputs=[value1, value2], outputs=output1)
-    submit_btn2.click(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
-
-    # Automatically generate the plot when the app loads
-    c_demo.load(plot_bar_chart, inputs=[value1, value2], outputs=output1)
-    c_demo.load(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
-
-    # Load the first model, first version, and version details when the app starts
+    # Load spekcle viewer
     def initialize_app():
-        first_model, first_version, viewer_url, version_details = load_default_model_and_version(project_data)
-        return first_model, first_version, f'<iframe src="{viewer_url}" style="width:100%; height:600px; border:none;"></iframe>', version_details
-
-
-    c_demo.load(
-        fn=initialize_app,
-        outputs=[model_dropdown, version_dropdown, viewer_iframe, version_details_df]
-    )
-    
-
-    # Event handlers
-    model_dropdown.change(
-        fn=lambda x: update_version_selection(x, project_data),
-        inputs=model_dropdown,
-        outputs=version_dropdown
-    )
-    
-    def update_viewer_and_stats(model_name, version_key):
-        viewer_url = create_viewer_url(model_name, version_key, project_data)
+        viewer_url = create_viewer_url(version, project)
         return f'<iframe src="{viewer_url}" style="width:100%; height:600px; border:none;"></iframe>'
 
-    version_dropdown.change(
-        fn=update_viewer_and_stats,
-        inputs=[model_dropdown, version_dropdown],
-        outputs=[viewer_iframe]
-    )
 
+    c_demo.load(fn=initialize_app, outputs=[viewer_iframe])
+
+    
 # c_demo.launch()
 
 # gradio service_page.py

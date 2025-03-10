@@ -3,6 +3,7 @@ from specklepy.api.client import SpeckleClient
 from specklepy.api.credentials import get_account_from_token
 import pandas as pd
 import plotly.express as px
+import os
 
 # Initialize Speckle client and credentials
 speckle_server = "macad.speckle.xyz"
@@ -13,187 +14,226 @@ client.authenticate_with_account(account)
 
 # Project ID
 project_id = "28a211b286"
+project = client.project.get_with_models(project_id=project_id, models_limit=100)
 
-def get_project_data():
-    project = client.project.get_with_models(project_id=project_id, models_limit=20)
-    return project
-
-# Initialize project data
-project_data = get_project_data()
-
-# Filter models whose names start with 'data'
-models = [m for m in project_data.models.items if m.name.startswith('residential')]
+# Filter models whose names start with 'structure/'
+# models = [item for item in project.models.items]
+models = [item for item in project.models.items if item.name.startswith('residential/shared/units_placed')]
+model = models[0]  # Select the first model
+model_views = [item for item in project.models.items if item.name.startswith('residential/shared/units_facade')][0]
+model_solar = [item for item in project.models.items if item.name.startswith('residential/shared/units_sun_hours')][0]
 models_name = [m.name for m in models]  # Extract model names
-print(models_name)
+models_name = models_name[0]  # Select the first model
+versions = client.version.get_versions(model_id=model.id, project_id=project.id, limit=100).items
+version_unit = versions[0]  # Select the first version
+version_views = client.version.get_versions(model_id=model_views.id, project_id=project_id, limit=100).items[0]
+version_solar = client.version.get_versions(model_id=model_solar.id, project_id=project.id, limit=100).items[0]
 
 def version_name(version):
-    timestamp = version.createdAt.strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = model.createdAt.strftime("%Y-%m-%d %H:%M:%S")
     return ' - '.join([version.authorUser.name, timestamp, version.message])
 
-def update_version_selection(model_name, project_data):
-    selected_model = [m for m in models if m.name == model_name][0]
-    versions = client.version.get_versions(model_id=selected_model.id, project_id=project_data.id, limit=100).items
-    return gr.Dropdown(choices=[version_name(v) for v in versions], label="Select Version")
+def create_viewer_url(model, version):
+    embed_src = f"https://macad.speckle.xyz/projects/{project_id}/models/{model.id}@{version.id}#embed=%7B%22isEnabled%22%3Atrue%2C%7D"
+    iframe = f'<iframe src="{embed_src}" style="width:100%; height:750px; border:none;"></iframe>'
+    return iframe
 
-def create_viewer_url(model_name, version_key, project_data):
-    selected_model = [m for m in models if m.name == model_name][0]
-    versions = client.version.get_versions(model_id=selected_model.id, project_id=project_data.id, limit=100).items
-    keys = [version_name(v) for v in versions]
-    selected_version = versions[keys.index(version_key)]
-    embed_src = f"https://macad.speckle.xyz/projects/{project_data.id}/models/{selected_model.id}@{selected_version.id}#embed=%7B%22isEnabled%22%3Atrue%2C%7D"
-    return embed_src
 
-def get_version_details(project_data):
-    all_version_details = []
-    
-    for model in models:
-        versions = client.version.get_versions(model_id=model.id, project_id=project_data.id, limit=100).items
-        
-        for version in versions:
-            all_version_details.append({
-                "Model Name": model.name,
-                "Timestamp": version.createdAt.strftime("%Y-%m-%d %H:%M:%S"),
-                "Author Name": version.authorUser.name,
-                "Version Message": version.message
-            })
-    
-    return pd.DataFrame(all_version_details)
 
-def load_default_model_and_version(project_data):
-    # Get the first model and its first version
-    if not models:
-        raise gr.Error("No models found starting with 'residential'.")
-    
-    first_model = models[0].name
-    versions = client.version.get_versions(model_id=models[0].id, project_id=project_data.id, limit=100).items
-    if not versions:
-        raise gr.Error(f"No versions found for model: {first_model}")
-    first_version = version_name(versions[0])
-    
-    # Get the viewer URL and version details DataFrame
-    viewer_url = create_viewer_url(first_model, first_version, project_data)
-    version_details = get_version_details(project_data)
-    
-    return first_model, first_version, viewer_url, version_details
+############################################################################################################
+####Load Meshes#############################################################################################
 
-first_model, first_version, viewer_url, version_details = load_default_model_and_version(project_data)
+def load_mesh():
+    model_path_1 = os.path.join(os.path.dirname(__file__), "files/residential_UNITS.glb")  # First 3D model
+    model_path_2 = os.path.join(os.path.dirname(__file__), "files/residential_solar.glb")   # Second 3D model
+    return model_path_1
 
-# print(len(version_details))
+############################################################################################################
+####KPIS and metrics########################################################################################
 
-def plot_bar_chart(value1, value2):
+def plot_bar_chart(value1, value2, value3, value4):
     df = pd.DataFrame({
-        'category': ['Standard daylight', 'Hyper Team B Building daylight'],
-        'values': [value1, value2]
+        'unit_type': [
+            'Best views', 
+            'Pleasant views',
+            'Average views',
+            'Worst views'
+        ],
+        'values': [value1, value2, value3, value4]
     })
     
-    fig = px.bar(df, x='category', y='values', title="Daylight factor", 
-                 color='category', text='values')
+    fig = px.bar(df, y='unit_type', x='values', title="Daylight Factor", 
+                 color='unit_type', orientation='h',
+                 color_discrete_sequence=['#04bed0', '#264ba3', '#7b258c', '#d6046d'])  # Custom colors
     
     fig.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Graphite background color
-        plot_bgcolor='rgb(50, 50, 50)',   # Graphite background color for the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white')     # Title font color
+        height = 530,
+        paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
+        plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
+        font=dict(color='white'),         # White font color
+        title_font=dict(color='white'),   # White title font
+        yaxis=dict(showticklabels=False), # Hide y-axis labels
+        xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
     )
+    
+    fig.update_traces(textposition='outside')  # Display values outside bars
 
     return fig
 
-def plot_bar_chart2(value1, value2):
-    value3 = value2 - value1
+def plot_bar_chart2(value1, value2, value3, value4):
     df = pd.DataFrame({
-        'category': ['Apartments with views', 'Apartments with no views'],
-        'values': [value1, value3]
+        'unit_type': [
+            'High daylight factor', 
+            'Medium daylight factor',
+            'Low daylight factor',
+            'Extremely low daylight factor'
+        ],
+        'values': [value1, value2, value3, value4]
     })
-    custom_colors = ['#1f77b4', '#ff7f0e']  # Blue and orange
-    fig = px.pie(df, values='values', names='category', title="View Apartments ratio", color_discrete_sequence=custom_colors)
+    
+    fig = px.bar(df, y='unit_type', x='values', title="Daylight Factor", 
+                 color='unit_type', orientation='h',
+                 color_discrete_sequence=['#ea2a00', '#fadd44', '#aecbf7', '#4d6caa'])  # Custom colors
     
     fig.update_layout(
-        paper_bgcolor='rgb(50, 50, 50)',  # Graphite background color
-        plot_bgcolor='rgb(50, 50, 50)',   # Graphite background color for the plot area
-        font=dict(color='white'),          # Font color for better contrast
-        title_font=dict(color='white')     # Title font color
+        height = 530,
+        paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
+        plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
+        font=dict(color='white'),         # White font color
+        title_font=dict(color='white'),   # White title font
+        yaxis=dict(showticklabels=False), # Hide y-axis labels
+        xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
     )
+    
+    fig.update_traces(textposition='outside')  # Display values outside bars
+
+    return fig
+
+def plot_pie_chart(types_list, values_list):
+    df = pd.DataFrame({
+        'unit type': types_list,
+        'values': values_list,
+    })
+
+    fig = px.pie(df, names='unit type', values='values', hole=0.3,
+                 color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800', '#ffffff'])  # Custom colors
+    
+    fig.update_layout(
+        height = 530,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
+        plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
+        font=dict(color='white'),         # White font color
+        title_font=dict(color='white'),   # White title font
+        yaxis=dict(showticklabels=False), # Hide y-axis labels
+        xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
+    )
+    
+    fig.update_traces(textposition='outside', sort = False)  # Display values outside bars
 
     return fig
 
 
+
+# Load Google Sheet
+sheet_csv_url = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=2078375139"
+df = pd.read_csv(sheet_csv_url)
+# Apply Styler
+styled_df = df.style.set_table_attributes('style="overflow: hidden;"')
+
+
+pie1 = plot_pie_chart(df['Unit type'].tolist()[:-2], df['Updated quantity (u)'].tolist()[:-2])
+pie2 = plot_pie_chart(df['Unit type'].tolist()[:-2], df['Updated Area (m2)'].tolist()[:-2])
+pie3 = plot_pie_chart(df['Unit type'].tolist()[:-2], df['Updated Population'].tolist()[:-2])
+# pie2.show()
 
 
 with gr.Blocks() as r_demo:
-    with gr.Row():
-        model_dropdown = gr.Dropdown(choices=models_name, label="Select Residential Team Model")
-        version_dropdown = gr.Dropdown(label="Select Version", allow_custom_value=True)
-    
-    with gr.Row():
-        viewer_iframe = gr.HTML(max_height=600)
-        version_details_df = gr.Dataframe(
-            label="Version Details",
-            headers=["Timestamp", "Author Name", "Version Message"],
-            datatype=["str", "str", "str"],
-            show_fullscreen_button=True,
-            show_copy_button=True,
-            wrap=True,
-            max_height=600
-        )
-    with gr.Row():
-        gr.Markdown("## KPIs and metrics")
-        
-    with gr.Row():
-        with gr.Column():
-            value1 = gr.Number(label="Standard daylight factor", value=45)
-            value2 = gr.Number(label="Hyper Team B Building daylight", value=85)
-            submit_btn1 = gr.Button("Submit")
-        
-        with gr.Column():
-            value3 = gr.Number(label="Apartments with views (%)", value=60)
-            value4 = gr.Number(label="Total number of apartments (%)", value=100)
-            submit_btn2 = gr.Button("Submit")
 
+    with gr.Row(equal_height=True):
+            gr.Textbox(value=models_name, label="Last Residential Team Model")
+            gr.Textbox(value = version_name(version_unit), label="Last Version")
+    with gr.Row(equal_height=True):
+            # model_output_1 = gr.Model3D(display_mode='solid', container=False,
+            #     clear_color=[0.0, 0.0, 0.0, 0.0], label="UNITS DISTRIBUTION", height=700)
+            viewer_iframe = gr.HTML()
+            gr.Gallery(value=["images/residential_01.png", "images/residential_02.png", "images/residential_03.jpg"], label="Residential Team Images", 
+                        rows=[1], columns=[3], selected_index=0, object_fit="contain", height=750)
             
+
+    gr.Markdown("#", height=50)
+    gr.Markdown("# Data", container=True)            
+    with gr.Row():
+        data = gr.DataFrame(value=df, max_height=10000, column_widths=[50,50,50,50,50,50,50], label="Residential Team Metrics", interactive=False, show_fullscreen_button = True)
+    gr.Markdown("#", height=50)
+    with gr.Row():
+        gr.Markdown("# Statistics", container=True)
     with gr.Row():
         with gr.Column():
-            output1 = gr.Plot()
-            
-        
+            gr.Markdown("## Unit Type Distribution")
+            pie1 = gr.Plot(pie1, label="Unit Type Distribution", container=False)
         with gr.Column():
-            output2 = gr.Plot()
+            gr.Markdown("## Area Distribution")
+            pie2 = gr.Plot(pie2, label="Area Distribution", container=False)
+        with gr.Column():
+            gr.Markdown("## Population Distribution")
+            pie3 = gr.Plot(pie3, label="Population Distribution", container=False)
+    with gr.Row():
+        gr.Markdown("#", height=50)
 
-    submit_btn1.click(plot_bar_chart, inputs=[value1, value2], outputs=output1)
-    submit_btn2.click(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
 
-    # Automatically generate the plot when the app loads
-    r_demo.load(plot_bar_chart, inputs=[value1, value2], outputs=output1)
-    r_demo.load(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
+    # gr.Markdown("# KPIs and metrics")
+    gr.Markdown("# KPI 1: Views Distribution", container=True)
+    with gr.Row(equal_height=True):
+        with gr.Column():
+            viewer_iframe_views = gr.HTML()
+            # model_output_1 = gr.Model3D(display_mode='solid', container=False,
+            #     clear_color=[0.0, 0.0, 0.0, 0.0], label="VIEWS DISTRIBUTION", height=700,
+            # )
+            gr.Image(value="images/residential_view_legend.jpg", show_label=False, container=False,
+                     show_fullscreen_button=False, show_download_button=False)
+        with gr.Column():
+            value1 = gr.Number(label="Best views (%)", value=65, show_label=True)
+            value2 = gr.Number(label="Pleasant views (%)", value=15, show_label=True)
+            value3 = gr.Number(label="Average views (%)", value=12, show_label=True)
+            value4 = gr.Number(label="Worst views (%)", value=8, show_label=True)
+            bar_plot1 = gr.Plot(container=False)
+    gr.Markdown("#", height=50)
+    gr.Markdown("# KPI 2: Solar Analysis", container=True)
+    with gr.Row():
+        with gr.Column():
+            viewer_iframe_solar = gr.HTML()
+            # model_output_2 = gr.Model3D(container=False,
+            #     clear_color=[0.0, 0.0, 0.0, 0.0], label="SOLAR ANALYSIS", height=700,
+            # )
+            gr.Image(value="images/residential_solar_legend.jpg", show_label=False, container=False,
+                     show_fullscreen_button=False, show_download_button=False)
 
-    # Load the first model, first version, and version details when the app starts
+        with gr.Column():
+            value5 = gr.Number(label='High daylight factor (%)', value=67, show_label=True)
+            value6 = gr.Number(label='Medium daylight factor (%)', value=22, show_label=True)
+            value7 = gr.Number(label='Low daylight factor (%)', value=8, show_label=True)
+            value8 = gr.Number(label="Low daylight factor (%)", value=3, show_label=True)
+            bar_plot2 = gr.Plot(container=False)
+
+    # Load spekcle viewer
     def initialize_app():
-        first_model, first_version, viewer_url, version_details = load_default_model_and_version(project_data)
-        return first_model, first_version, f'<iframe src="{viewer_url}" style="width:100%; height:600px; border:none;"></iframe>', version_details
+        viewer_url = create_viewer_url(model, version_unit)
+        viewer_url_views = create_viewer_url(model_views, version_views)
+        viewer_url_solar = create_viewer_url(model_solar, version_solar)
+        return viewer_url, viewer_url_views, viewer_url_solar
 
 
-    r_demo.load(
-        fn=initialize_app,
-        outputs=[model_dropdown, version_dropdown, viewer_iframe, version_details_df]
-    )
+
+    r_demo.load(fn=initialize_app, outputs=[viewer_iframe, viewer_iframe_views, viewer_iframe_solar])
     
 
-    # Event handlers
-    model_dropdown.change(
-        fn=lambda x: update_version_selection(x, project_data),
-        inputs=model_dropdown,
-        outputs=version_dropdown
-    )
+    # Automatically generate plots
+    r_demo.load(plot_bar_chart, inputs=[value1, value2, value3, value4], outputs=bar_plot1)
+    r_demo.load(plot_bar_chart2, inputs=[value5, value6, value7, value8], outputs=bar_plot2)
+    # r_demo.load(load_mesh, outputs=[model_output_1])
+
     
-    def update_viewer_and_stats(model_name, version_key):
-        viewer_url = create_viewer_url(model_name, version_key, project_data)
-        return f'<iframe src="{viewer_url}" style="width:100%; height:600px; border:none;"></iframe>'
-
-    version_dropdown.change(
-        fn=update_viewer_and_stats,
-        inputs=[model_dropdown, version_dropdown],
-        outputs=[viewer_iframe]
-    )
-
 # r_demo.launch()
 
 # gradio residential_page.py

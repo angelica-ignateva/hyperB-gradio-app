@@ -9,7 +9,7 @@ from residential_page import r_demo
 from facade_page import f_demo
 from industrial_page import i_demo
 from service_page import c_demo
-from gradio_page import b_demo
+# from gradio_page import b_demo
 # from space_calculator import sc_demo
 
 # Initialize Speckle client and credentials
@@ -249,7 +249,7 @@ fig5 = px.pie(df_all, names="Category", values="Values", title="All buildings")
 
 # Create Gradio interface
 with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
-    with gr.Tab("Overall Analysis"):
+    with gr.Tab("Speckle Insights"):
         gr.Markdown("# Speckle Stream Activity Dashboard 📈")
         gr.Markdown("### HyperBuilding B Analytics")
         
@@ -294,34 +294,40 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as demo:
 
     # with gr.Tab("Space Calculator"):
     #     sc_demo.render()
-    with gr.Tab("Team Requirements"):
-        with gr.Row():
-            team_dropdown = gr.Dropdown(choices=['Residential Team', 'Facade Team', 'Structural Team', 'Service Team', 'Industrial Team'], 
-                                    value="Residential Team",
-                                    label='Select Team', 
-                                    interactive=True)
-        with gr.Row():
-            gr.Markdown("# KPI's Team Viewer")
-        with gr.Row():
-            sheet_display = gr.DataFrame()
-            team_dropdown.change(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
+    # with gr.Tab("Team Requirements"):
+    #     with gr.Row():
+    #         team_dropdown = gr.Dropdown(choices=['Residential Team', 'Facade Team', 'Structural Team', 'Service Team', 'Industrial Team'], 
+    #                                 value="Residential Team",
+    #                                 label='Select Team', 
+    #                                 interactive=True)
+    #     with gr.Row():
+    #         gr.Markdown("# KPI's Team Viewer")
+    #     with gr.Row():
+    #         sheet_display = gr.DataFrame()
+    #         team_dropdown.change(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
+    
+    with gr.Tab("Residential Team"):
+        r_demo.render()
+
+    with gr.Tab("Service Team"):
+        c_demo.render()
+
+    with gr.Tab("Industrial Team"):
+        i_demo.render()
 
     with gr.Tab("Structural Team"):
         s_demo.render()
     with gr.Tab("Facade Team"):
         f_demo.render()
-    with gr.Tab("Residential Team"):
-        r_demo.render()
-    with gr.Tab("Industrial Team"):
-        i_demo.render()
-    with gr.Tab("Service Team"):
-        c_demo.render()
-    with gr.Tab("Building Analysis"):
-        b_demo.render()
+    
+    
+    
+    # with gr.Tab("Building Analysis"):
+    #     b_demo.render()
 
 
-    # Load the default team's sheet when the app starts
-    demo.load(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
+    # # Load the default team's sheet when the app starts
+    # demo.load(fn=load_sheet, inputs=team_dropdown, outputs=sheet_display)
 
     # Initialize statistics and plots once (as State variables)
     model_stats_state = gr.State(generate_statistics(project_data))
