@@ -162,10 +162,15 @@ def plot_pie_chart(value1, value2):
     fig.update_traces(textposition='outside', textinfo='percent+label')
     
     fig.update_layout(
+        title=dict(
+            text="Locally-fed Residents Ratio",  # Setting the title text
+            x=0.5,       # Center align title
+            y=0.02,      # Adjust vertical positioning
+            font=dict(size=18, color="white")  # Title font settings
+        ),
         paper_bgcolor='rgb(15, 15, 15)',  # Graphite background color
         plot_bgcolor='rgb(15, 15, 15)',   # Graphite background color for the plot area
         font=dict(family="Roboto Mono", size=14, color="white"),
-        title_font=dict(color='white'),
         showlegend=False,
         height=700   
     )
@@ -194,7 +199,7 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Default(primary_hue="indigo", tex
     gr.HTML(metrics_html)
 
     gr.Markdown("#", height=50)
-    gr.Markdown("#  KPI: Percentage of local food fed residents", container=True)
+    gr.Markdown("##  KPI: Percentage of local food fed residents", container=True)
     with gr.Row(equal_height=True):
         with gr.Column(variant='compact'):
             gr.HTML(metric1_html)
@@ -205,7 +210,7 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Default(primary_hue="indigo", tex
             value2 = gr.Number(label="Others)", value=12.8, visible=False)
         
 
-        with gr.Column(scale=3):
+        with gr.Column(scale=2):
             output1 = gr.Plot(show_label=False, container=False)
             
 

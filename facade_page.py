@@ -20,7 +20,7 @@ project = client.project.get_with_models(project_id=project_id, models_limit=100
 models = [item for item in project.models.items if item.name.startswith('facade')]
 model = [item for item in project.models.items if item.name.startswith('facade/final panelisation')][0]  # Select the first model
 models_name = [m.name for m in models]  # Extract model names
-model_name = models_name[0]  # Select the first model
+model_name = model.name  # Select the first model
 versions = client.version.get_versions(model_id=model.id, project_id=project.id, limit=100).items
 version = versions[0]  # Select the first version
 
@@ -39,44 +39,51 @@ def create_viewer_url(model, version):
     return iframe
 
 # Plotting functions
-def plot_bar_chart(types_list, values_list):
+def plot_pie_chart(types_list, values_list):
     df = pd.DataFrame({
-        'category': types_list,
-        'values': values_list,
+        'facade type': types_list,
+        'percentage': values_list,
     })
 
-    fig = px.bar(df, y='category', x='values', orientation= 'h', color='category',
-                 color_discrete_sequence=px.colors.sequential.Blues_r)  # or .Viridis, .Inferno, .Magma, etc.
-                # color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800'])  # Custom colors           
+    fig = px.pie(df, names='facade type', values='percentage', hole=0.3, 
+                 color_discrete_sequence=px.colors.sequential.Sunsetdark)  # or .Bold, .Safe, .Vivid, etc.
+                # color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800'])  # Custom colors
+    
+                
     
     fig.update_layout(
-        height = 500,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(family="Roboto Mono", size=12, color="white")),
+        height = 770,
+        title=dict(
+            text='Facade Type Distribution',  # Setting the title text
+            x=0.5,       # Center align title
+            y=0.02,      # Adjust vertical positioning
+            font=dict(size=18, color="white")  # Title font settings
+        ),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
         plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
-        font=dict(color='white'),         # White font color
-        title_font=dict(color='white'),   # White title font
+        font=dict(family="Roboto Mono", size=10, color="white"),         # White font color
         yaxis=dict(showticklabels=False), # Hide y-axis labels
         xaxis=dict(showgrid=True, gridcolor='rgb(150, 150, 150)')  # Grey vertical grid lines
     )
     
-    fig.update_traces(textposition='outside')  # Display values outside bars
+    fig.update_traces(textposition='outside', sort = False, pull=[0.1] * len(df))  # Display values outside bars
 
     return fig
 
 
 ##################################################
 
-sheet_csv_url1 = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=1574003666"
+sheet_csv_url1 = "https://docs.google.com/spreadsheets/d/1Ju7wDVKEIBMoE5DzkIIKqYtXg5rmnVC-52HSGhMYdew/export?format=csv&gid=451167349"
 df1 = pd.read_csv(sheet_csv_url1)
-bar1 = plot_bar_chart(df1['Tower number'].tolist(), df1['Reduction, %'].tolist())
+bar1 = plot_pie_chart(df1['NAME'][:-1].tolist(), df1['%'][:-1].tolist())
 
-def highlight_last_column(s):
-    color = 'rgba(24, 100, 181, 0.5)'  # Light blue with 50% transparency
-    return [f'background-color: {color}' if s.name == df1.columns[-1] else '' for _ in s]
+def highlight_last_row(s):
+    color = 'rgba(101, 44, 179, 0.25)'  # Light blue with 50% transparency
+    return [f'background-color: {color}' if i == s.index[-1] else '' for i in s.index]
 
 # Apply the highlighting
-styler = df1.style.apply(highlight_last_column, axis=0)
+styler = df1.style.apply(highlight_last_row, axis=0)
 
 
 ##################################################
@@ -107,23 +114,22 @@ metric1_html = """
 
 
 # GRADIO UI
-with gr.Blocks() as demo:
-    gr.Markdown("## Massing Structure Analysis")
+with gr.Blocks() as f_demo:
     with gr.Row(equal_height=True):
-        model_dropdown = gr.Dropdown(choices=models_name, label="Select Industrial Team Model", value = model_name)
+        model_dropdown = gr.Dropdown(choices=models_name, label="Select Facade Team Model", value = model_name)
         version_text = gr.Textbox(value = version_name(model, version), info="Last version of selected model was sent by ", container=False, lines=2)
     with gr.Row(equal_height=True):
         with gr.Column():
             viewer_iframe = gr.HTML()
         with gr.Column():
-            gr.Gallery(value=["structural.png", "structural_00A.png", "structural_00.png"], label="Structural Images", 
+            gr.Gallery(value=["facade_00.png", "facade_01.png", "facade_02.png", "facade_03.png"], label="Facade Images", 
                             rows=[1], columns=[3], selected_index=0, object_fit="contain", height=750)
     
     gr.Markdown("#", height=50)
-    gr.Markdown("# KPI: Energy generation", container=True)
+    gr.Markdown("## KPI: Energy generation", container=True)
     with gr.Row():
-        with gr.Column():
-            gr.DataFrame(value=styler, label="Wind Loads Metrics", interactive=False, show_fullscreen_button = True, max_height=1000)
+        with gr.Column(scale=1.5):
+            gr.DataFrame(value=styler, label="Facade Distribution Data", interactive=False, show_fullscreen_button = True, max_height=1000, column_widths=[90,10, 15, 15])
             gr.HTML(metric1_html)
         with gr.Column():
             gr.Plot(bar1, container=False, show_label=False)
@@ -134,7 +140,7 @@ with gr.Blocks() as demo:
         return viewer_url
 
 
-    demo.load(fn=initialize_app, outputs=[viewer_iframe])
+    f_demo.load(fn=initialize_app, outputs=[viewer_iframe])
 
     def handle_model_change(selected_model_name):
         selected_model = next((m for m in models if m.name == selected_model_name), None)
@@ -148,6 +154,6 @@ with gr.Blocks() as demo:
     model_dropdown.change(fn=handle_model_change, inputs=model_dropdown, outputs=[viewer_iframe, version_text])
     
 
-demo.launch()
+# demo.launch()
 
 # gradio facade_page.py

@@ -1,0 +1,26 @@
+[
+  {
+    "component": "structural_core",
+    "material": "concrete",
+    "material_type": "high_performance",
+    "density": 2.4,
+    "volume": 100,
+    "location": "central_core"
+  },
+  {
+    "component": "external_facade",
+    "material": "glass",
+    "material_type": "low_e",
+    "density": 2.5,
+    "volume": 60,
+    "energy_efficiency_rating": "high"
+  },
+  {
+    "component": "structural_core",
+    "material": "steel",
+    "material_type": "low_carbon",
+    "density": 7.85,
+    "volume": 40,
+    "recycled_content_percentage": 50
+  }
+]

@@ -3,19 +3,10 @@ import pandas as pd
 import plotly.express as px
 from specklepy.api.client import SpeckleClient
 from specklepy.api.credentials import get_account_from_token
-# import matplotlib.pyplot as plt
-# from structural_page import s_p_demo
-# from residential_page import r_p_demo
-# from facade_page import f_p_demo
-# from industrial_page import i_p_demo
-# from service_page import c_p_demo
-
-# from gradio_page import b_p_demo
-# from space_calculator import sc_p_demo
+from config import speckle_token
 
 # Initialize Speckle client and credentials
 speckle_server = "macad.speckle.xyz"
-speckle_token = "abaa47aed44d2e7faf42d3ba5f7e7440a06b487d9e"
 client = SpeckleClient(host=speckle_server)
 account = get_account_from_token(speckle_token, speckle_server)
 client.authenticate_with_account(account)
@@ -293,7 +284,7 @@ def create_piechart(values, names, categories):
 
 # Create the pie charts
 fig = px.pie(data_podium, names="Category", values="Values", hole=0.4, color_discrete_sequence=px.colors.sequential.Emrld)
-fig.update_layout(height = 500,legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5, font=dict(family="Roboto Mono", size=10, color="white")),
+fig.update_layout(height = 500,legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5, font=dict(color="white")),
         paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
         plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
         font=dict(color='white'),         # White font color
@@ -343,7 +334,7 @@ fig.update_traces(textposition='outside', sort = False, pull=[0.1] * len(data_po
 # fig4.update_traces(textposition='outside', sort = False, pull=[0.1] * len(b4))  # Display values outside bars
 
 fig5 = px.pie(df_all, names="Category", values="Values", hole=0.4, color_discrete_sequence=px.colors.sequential.Agsunset_r)
-fig5.update_layout(height = 500, legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5, font=dict(family="Roboto Mono", size=10, color="white")),
+fig5.update_layout(height = 500, legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5, font=dict(color="white")),
         paper_bgcolor='rgb(15, 15, 15)',  # Graphite background
         plot_bgcolor='rgb(15, 15, 15)',   # Graphite plot area
         font=dict(color='white'),         # White font color
@@ -376,25 +367,25 @@ with gr.Blocks(title="Speckle Stream Activity Dashboard") as p_demo:
                 gr.Markdown("### All Towers", container=True) 
                 gr.Plot(fig5, container=False, show_label=False)
             with gr.Column():
-                gr.Markdown("## Podium - Transport & Industry", container=True) 
+                gr.Markdown("### Podium - Transport & Industry", container=True) 
                 gr.Plot(fig, container=False, show_label=False)
         gr.Markdown("#", height=15)
         with gr.Row():
             
             with gr.Column():
-                gr.Markdown("### Tower 1 - Mixed,  GFA - 110k m² ", container=True) 
+                gr.Markdown("### Tower A - Mixed,  GFA - 110k m² ", container=True) 
                 gr.Plot(fig1, container=False, show_label=False)
             with gr.Column():
-                gr.Markdown("### Tower 2 - Mixed,  GFA - 120k m² ", container=True) 
+                gr.Markdown("### Tower B - Mixed,  GFA - 120k m² ", container=True) 
                 gr.Plot(fig2, container=False, show_label=False)
         gr.Markdown("#", height=15)   
         with gr.Row():
                 
             with gr.Column():
-                gr.Markdown("### Tower 3 - Mixed,  GFA - 115k m² ", container=True) 
+                gr.Markdown("### Tower C - Mixed,  GFA - 115k m² ", container=True) 
                 gr.Plot(fig3, container=False, show_label=False)
             with gr.Column():
-                gr.Markdown("### Tower 4 - Service,  GFA - 95k m² ", container=True) 
+                gr.Markdown("### Tower D - Service,  GFA - 95k m² ", container=True) 
                 gr.Plot(fig4, container=False, show_label=False)
             
 

@@ -8,6 +8,8 @@ from program import p_demo
 from residential_page import r_demo
 from service_page import s_demo
 from industrial_page import i_demo
+from facade_page import f_demo
+from structural_page import st_demo
 
 js_func = """
 function refresh() {
@@ -205,7 +207,7 @@ def update_model_selection_by_team(team_selection):
 
 iframe_html = '''
 <iframe 
-  src = "https://macad.speckle.xyz/projects/28a211b286/models/641842f4e9@0e4b20ab51,b6d0d9f089@b5cbd2c6cb,fb246c4f0ef#embed=%7B%22isEnabled%22%3Atrue%2C%7D" 
+  src = "https://macad.speckle.xyz/projects/28a211b286/models/2e045c057c,355ba25602,38d2a00393,5096ad6f65,627006f015,74a5650a9f,79c2d14397,92536e4925,a73451f397,fb246c4f0e#embed=%7B%22isEnabled%22%3Atrue%2C%7D" 
   style="width:100%; height:775px; border:none;">
 </iframe>
 '''
@@ -225,8 +227,8 @@ def load_sheet(team):
         return df
 
 
-
-with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="indigo", text_size="lg")) as demo:
+# , text_size="lg")
+with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="indigo")) as demo:
     with gr.Tab("Hyper B"):
         with gr.Row():
             with gr.Column():
@@ -240,7 +242,7 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
                 # Add global font import
                 gr.HTML(iframe_html)
         gr.Markdown("#", height=25)
-        gr.Markdown("### TEAM MODELS & METRICS")
+        gr.Markdown("## TEAM MODELS & METRICS")
         with gr.Row():
             with gr.Column():
                 viewer_iframe = gr.HTML()
@@ -268,6 +270,10 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
         s_demo.render()
     with gr.Tab("Industrial Team"):
         i_demo.render()
+    with gr.Tab("Structural Team"):
+        st_demo.render()
+    with gr.Tab("Facade Team"):
+        f_demo.render()
 
     # Load spekcle viewer
     def initialize_app():

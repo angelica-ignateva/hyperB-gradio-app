@@ -1,0 +1,290 @@
+[
+  {
+      "component": "fundament",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 100000.0,
+      "location": "base_foundation",
+      "building_name": "Tower A"
+  },
+  {
+      "component": "structural_columns",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 50000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower A"
+  },
+  {
+      "component": "floorplates",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 80000.0,
+      "location": "inter_floor_structure",
+      "building_name": "Tower A"
+  },
+  {
+      "component": "structural_core",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 90000.0,
+      "location": "central_core",
+      "building_name": "Tower A"
+  },
+  {
+      "component": "external_facade",
+      "material": "glass",
+      "material_type": "low_e",
+      "density": 2.5,
+      "volume": 50000.0,
+      "energy_efficiency_rating": "high",
+      "building_name": "Tower A"
+  },
+  {
+      "component": "structural_core",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 40000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower A"
+  },
+  {
+      "component": "sky_gardens",
+      "material": "advanced_composites",
+      "material_type": "lightweight",
+      "density": 1.6,
+      "volume": 10000.0,
+      "sustainability_index": 0.8,
+      "building_name": "Tower A"
+  },
+  {
+      "component": "renewable_energy_integration",
+      "material": "carbon_fiber",
+      "material_type": "advanced",
+      "density": 1.6,
+      "volume": 5000.0,
+      "energy_generation_capacity": 500,
+      "building_name": "Tower A"
+  },
+  {
+      "component": "fundament",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 100000.0,
+      "location": "base_foundation",
+      "building_name": "Tower B"
+  },
+  {
+      "component": "structural_columns",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 50000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower B"
+  },
+  {
+      "component": "floorplates",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 80000.0,
+      "location": "inter_floor_structure",
+      "building_name": "Tower B"
+  },
+  {
+      "component": "structural_core",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 90000.0,
+      "location": "central_core",
+      "building_name": "Tower B"
+  },
+  {
+      "component": "external_facade",
+      "material": "glass",
+      "material_type": "low_e",
+      "density": 2.5,
+      "volume": 50000.0,
+      "energy_efficiency_rating": "high",
+      "building_name": "Tower B"
+  },
+  {
+      "component": "structural_core",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 40000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower B"
+  },
+  {
+      "component": "sky_gardens",
+      "material": "advanced_composites",
+      "material_type": "lightweight",
+      "density": 1.6,
+      "volume": 10000.0,
+      "sustainability_index": 0.8,
+      "building_name": "Tower B"
+  },
+  {
+      "component": "renewable_energy_integration",
+      "material": "carbon_fiber",
+      "material_type": "advanced",
+      "density": 1.6,
+      "volume": 5000.0,
+      "energy_generation_capacity": 500,
+      "building_name": "Tower B"
+  },
+  {
+      "component": "fundament",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 100000.0,
+      "location": "base_foundation",
+      "building_name": "Tower C"
+  },
+  {
+      "component": "structural_columns",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 50000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower C"
+  },
+  {
+      "component": "floorplates",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 80000.0,
+      "location": "inter_floor_structure",
+      "building_name": "Tower C"
+  },
+  {
+      "component": "structural_core",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 90000.0,
+      "location": "central_core",
+      "building_name": "Tower C"
+  },
+  {
+      "component": "external_facade",
+      "material": "glass",
+      "material_type": "low_e",
+      "density": 2.5,
+      "volume": 50000.0,
+      "energy_efficiency_rating": "high",
+      "building_name": "Tower C"
+  },
+  {
+      "component": "structural_core",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 40000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower C"
+  },
+  {
+      "component": "sky_gardens",
+      "material": "advanced_composites",
+      "material_type": "lightweight",
+      "density": 1.6,
+      "volume": 10000.0,
+      "sustainability_index": 0.8,
+      "building_name": "Tower C"
+  },
+  {
+      "component": "renewable_energy_integration",
+      "material": "carbon_fiber",
+      "material_type": "advanced",
+      "density": 1.6,
+      "volume": 5000.0,
+      "energy_generation_capacity": 500,
+      "building_name": "Tower C"
+  },
+  {
+      "component": "fundament",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 100000.0,
+      "location": "base_foundation",
+      "building_name": "Tower D"
+  },
+  {
+      "component": "structural_columns",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 50000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower D"
+  },
+  {
+      "component": "floorplates",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 80000.0,
+      "location": "inter_floor_structure",
+      "building_name": "Tower D"
+  },
+  {
+      "component": "structural_core",
+      "material": "concrete",
+      "material_type": "high_performance",
+      "density": 2.4,
+      "volume": 90000.0,
+      "location": "central_core",
+      "building_name": "Tower D"
+  },
+  {
+      "component": "external_facade",
+      "material": "glass",
+      "material_type": "low_e",
+      "density": 2.5,
+      "volume": 50000.0,
+      "energy_efficiency_rating": "high",
+      "building_name": "Tower D"
+  },
+  {
+      "component": "structural_core",
+      "material": "steel",
+      "material_type": "low_carbon",
+      "density": 7.85,
+      "volume": 40000.0,
+      "recycled_content_percentage": 50,
+      "building_name": "Tower D"
+  },
+  {
+      "component": "sky_gardens",
+      "material": "advanced_composites",
+      "material_type": "lightweight",
+      "density": 1.6,
+      "volume": 10000.0,
+      "sustainability_index": 0.8,
+      "building_name": "Tower D"
+  },
+  {
+      "component": "renewable_energy_integration",
+      "material": "carbon_fiber",
+      "material_type": "advanced",
+      "density": 1.6,
+      "volume": 5000.0,
+      "energy_generation_capacity": 500,
+      "building_name": "Tower D"
+  }
+]

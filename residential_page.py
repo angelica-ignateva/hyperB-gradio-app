@@ -218,7 +218,7 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
             
 
     gr.Markdown("#", height=50)
-    gr.Markdown("# Data", container=True)            
+    gr.Markdown("## Data", container=True)            
     data = gr.DataFrame(value=df, max_height=10000, label="Residential Team Metrics", interactive=False, show_fullscreen_button = True)
 
     # Button to update the DataFrame manually
@@ -227,16 +227,16 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
 
     gr.Markdown("#", height=50)
     with gr.Row():
-        gr.Markdown("# Statistics", container=True)
+        gr.Markdown("## Statistics", container=True)
     with gr.Row():
         with gr.Column():
-            gr.Markdown("## Unit Type Distribution")
+            gr.Markdown("### Unit Type Distribution")
             pie1 = gr.Plot(pie1, label="Unit Type Distribution", container=False)
         with gr.Column():
-            gr.Markdown("## Area Distribution")
+            gr.Markdown("### Area Distribution")
             pie2 = gr.Plot(pie2, label="Area Distribution", container=False)
         with gr.Column():
-            gr.Markdown("## Population Distribution")
+            gr.Markdown("### Population Distribution")
             pie3 = gr.Plot(pie3, label="Population Distribution", container=False)
 
     with gr.Row():
@@ -244,7 +244,7 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
 
 
     # gr.Markdown("# KPIs and metrics")
-    gr.Markdown("# KPI 1: Views Distribution", container=True)
+    gr.Markdown("## KPI 1: Views Distribution", container=True)
     with gr.Row(equal_height=True):
         with gr.Column():
             viewer_iframe_views = gr.HTML()
@@ -261,7 +261,7 @@ with gr.Blocks(css=custom_css, js=js_func, theme=gr.themes.Default(primary_hue="
                 bar_plot1 = gr.Plot(container=False)
 
     gr.Markdown("#", height=50)
-    gr.Markdown("# KPI 2: Solar Analysis", container=True)
+    gr.Markdown("## KPI 2: Solar Analysis", container=True)
     with gr.Row():
         with gr.Column():
             viewer_iframe_solar = gr.HTML()

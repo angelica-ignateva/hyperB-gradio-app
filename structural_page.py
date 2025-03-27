@@ -129,11 +129,11 @@ def create_viewer_url(model, version):
 # Plotting functions
 def plot_bar_chart(types_list, values_list):
     df = pd.DataFrame({
-        'category': types_list,
-        'values': values_list,
+        'tower': types_list,
+        '% reduction of wind load': values_list,
     })
 
-    fig = px.bar(df, y='category', x='values', orientation= 'h', color='category',
+    fig = px.bar(df, y='tower', x='% reduction of wind load', orientation= 'h', color='tower',
                  color_discrete_sequence=px.colors.sequential.Blues_r)  # or .Viridis, .Inferno, .Magma, etc.
                 # color_discrete_sequence=['#49bf66', '#1c77d9', '#7a36d9', '#c7080b', '#ff8800'])  # Custom colors           
     
@@ -185,7 +185,7 @@ metric1_html = """
                 AVERAGE WIND LOAD OPTIMIZATION
             </div>
             <div style="color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: 0.5px; font-family: 'Roboto Mono', monospace;">
-                87.2%
+                16.5%
             </div>
         </div>
 
@@ -195,7 +195,7 @@ metric1_html = """
 
 
 # GRADIO UI
-with gr.Blocks() as demo:
+with gr.Blocks() as st_demo:
     # with gr.Tab(label="Massing structure"):
         gr.Markdown("## Massing Structure Analysis")
         with gr.Row(equal_height=True):
@@ -266,8 +266,8 @@ with gr.Blocks() as demo:
     # submit_btn2.click(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
 
     # # Automatically generate the plot when the app loads
-    # demo.load(plot_bar_chart, inputs=[value1, value2], outputs=output1)
-    # demo.load(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
+    # st_demo.load(plot_bar_chart, inputs=[value1, value2], outputs=output1)
+    # st_demo.load(plot_bar_chart2, inputs=[value3, value4], outputs=output2)
 
         # Load spekcle viewer
         def initialize_app():
@@ -275,7 +275,7 @@ with gr.Blocks() as demo:
             return viewer_url
 
 
-        demo.load(fn=initialize_app, outputs=[viewer_iframe])
+        st_demo.load(fn=initialize_app, outputs=[viewer_iframe])
 
         def handle_model_change(selected_model_name):
             selected_model = next((m for m in models if m.name == selected_model_name), None)
@@ -289,6 +289,6 @@ with gr.Blocks() as demo:
         model_dropdown.change(fn=handle_model_change, inputs=model_dropdown, outputs=[viewer_iframe, version_text])
     
 
-demo.launch()
+# st_demo.launch()
 
 # gradio structural_page.py
